@@ -19,5 +19,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressSession);
 
+// Passport Setup
+const passport = require("passport");
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`App listening on {port}`))
