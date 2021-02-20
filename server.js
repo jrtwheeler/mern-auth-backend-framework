@@ -41,5 +41,17 @@ const UserDetail = new Schema({
 UserDetail.plugin(passportLocalMongoose);
 const UserDetails = mongoose.model('userInfo', UserDetail, 'userInfo');
 
+/* PASSPORT LOCAL AUTHENTICATION */
+// passport use the local strategy by calling createStrategy() 
+//on our UserDetails model — courtesy of passport-local-mongoose
+passport.use(UserDetails.createStrategy());
+
+//invoked on authentication, and its job is to serialize the user instance 
+//with the information we pass on to it and store it in the session via a cookie
+passport.serializeUser(UserDetails.serializeUser());
+//invoked every subsequent request to deserialize the instance, 
+//providing it the unique cookie identifier as a “credential”.
+passport.deserializeUser(UserDetails.deserializeUser());
+
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`App listening on {port}`))
