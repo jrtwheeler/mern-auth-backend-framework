@@ -42,6 +42,7 @@ UserDetail.plugin(passportLocalMongoose);
 const UserDetails = mongoose.model('userInfo', UserDetail, 'userInfo');
 
 /* PASSPORT LOCAL AUTHENTICATION */
+
 // passport use the local strategy by calling createStrategy() 
 //on our UserDetails model — courtesy of passport-local-mongoose
 passport.use(UserDetails.createStrategy());
@@ -52,6 +53,52 @@ passport.serializeUser(UserDetails.serializeUser());
 //invoked every subsequent request to deserialize the instance, 
 //providing it the unique cookie identifier as a “credential”.
 passport.deserializeUser(UserDetails.deserializeUser());
+
+/* ROUTES */
+
+const connectEnsureLogin = require('connect-ensure-login');
+
+app.post('/login', (req, res, next) => {
+  passport.authenticate('local',
+  (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (!user) {
+      return res.redirect('/login?info=' + info);
+    }
+
+    req.logIn(user, function(err) {
+      if (err) {
+        return next(err);
+      }
+
+      return res.redirect('/');
+    });
+
+  })(req, res, next);
+});
+
+app.get('/login',
+  (req, res) => res.sendFile('html/login.html',
+  { root: __dirname })
+);
+
+app.get('/',
+  connectEnsureLogin.ensureLoggedIn(),
+  (req, res) => res.sendFile('html/index.html', {root: __dirname})
+);
+
+app.get('/private',
+  connectEnsureLogin.ensureLoggedIn(),
+  (req, res) => res.sendFile('html/private.html', {root: __dirname})
+);
+
+app.get('/user',
+  connectEnsureLogin.ensureLoggedIn(),
+  (req, res) => res.send({user: req.user})
+);
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`App listening on {port}`))
